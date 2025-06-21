@@ -3,31 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finans & Personel Raporu</title>
+    <title>Detaylı Finans Raporu</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #4361ee;
-            --secondary: #3f37c9;
-            --success: #4cc9f0;
-            --danger: #f72585;
-            --warning: #f8961e;
-            --info: #4895ef;
+            --secondary: #3a0ca3;
+            --income: #4cc9f0;
+            --expense: #f72585;
+            --invoice-out: #3a86ff;
+            --invoice-in: #4895ef;
+            --bank: #7209b7;
+            --personnel: #f8961e;
             --light: #f8f9fa;
             --dark: #212529;
+            --text: #333;
         }
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
-            color: #333;
+            color: var(--text);
             background-color: #f5f7fa;
             margin: 0;
             padding: 20px;
         }
         
-        .dashboard {
-            max-width: 1200px;
+        .report-container {
+            max-width: 1000px;
             margin: 0 auto;
             background: white;
             border-radius: 10px;
@@ -36,9 +39,7 @@
         }
         
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            text-align: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
             border-bottom: 1px solid #eee;
@@ -46,22 +47,56 @@
         
         .header h1 {
             color: var(--primary);
-            margin: 0;
+            margin: 0 0 10px 0;
             font-size: 28px;
+        }
+        
+        .date-selector {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .date-selector input {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        
+        .financial-sections {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .financial-sections {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .financial-section {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
         
-        .input-section {
-            background: #f9fafb;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-        }
-        
         .input-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         .input-group label {
@@ -78,6 +113,7 @@
             border-radius: 6px;
             font-size: 16px;
             transition: border 0.3s;
+            text-align: right;
         }
         
         .input-group input:focus {
@@ -85,122 +121,153 @@
             outline: none;
         }
         
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+        .results {
+            margin-top: 30px;
         }
         
-        .card {
+        .result-card {
             background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
             padding: 20px;
-            border-top: 4px solid;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         
-        .income { border-top-color: var(--success); }
-        .expense { border-top-color: var(--danger); }
-        .cost { border-top-color: var(--warning); }
-        .profit { border-top-color: var(--primary); }
+        .invoice-out-card { border-left-color: var(--invoice-out); }
+        .invoice-in-card { border-left-color: var(--invoice-in); }
+        .income-card { border-left-color: var(--income); }
+        .expense-card { border-left-color: var(--expense); }
+        .bank-card { border-left-color: var(--bank); }
+        .personnel-card { border-left-color: var(--personnel); }
         
-        .card-header {
+        .result-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
         }
         
-        .card-title {
+        .result-title {
             font-size: 18px;
             font-weight: 600;
-            color: var(--dark);
             margin: 0;
         }
         
-        .card-icon {
-            color: var(--dark);
-            font-size: 20px;
-        }
-        
-        .card-value {
+        .result-value {
             font-size: 24px;
             font-weight: 700;
-            margin: 10px 0;
+            margin: 5px 0;
+            text-align: right;
         }
         
-        .positive { color: var(--success); }
-        .negative { color: var(--danger); }
+        .invoice-out-value { color: var(--invoice-out); }
+        .invoice-in-value { color: var(--invoice-in); }
+        .income-value { color: var(--income); }
+        .expense-value { color: var(--expense); }
+        .bank-value { color: var(--bank); }
+        .personnel-value { color: var(--personnel); }
         
-        .employees-section {
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+            font-size: 15px;
+        }
+        
+        .summary-table th, .summary-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        .summary-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .summary-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .summary-table td {
+            text-align: right;
+            font-family: monospace;
+        }
+        
+        .bank-section, .personnel-section {
             margin-top: 40px;
         }
         
-        .section-title {
-            font-size: 22px;
-            font-weight: 600;
-            color: var(--dark);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .employees-grid {
+        .bank-grid, .personnel-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
         }
         
-        .employee-card {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            padding: 20px;
+        .bank-card, .personnel-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-top: 3px solid;
+        }
+        
+        .bank-card { border-top-color: var(--bank); }
+        .personnel-card { border-top-color: var(--personnel); }
+        
+        .bank-info, .personnel-info {
             display: flex;
             align-items: center;
-            gap: 15px;
-            border-left: 4px solid var(--primary);
+            gap: 12px;
+            margin-bottom: 15px;
         }
         
-        .employee-avatar {
-            width: 60px;
-            height: 60px;
+        .bank-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bank);
+            font-size: 20px;
+        }
+        
+        .personnel-avatar {
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid #eee;
         }
         
-        .employee-info {
-            flex: 1;
-        }
-        
-        .employee-name {
+        .bank-name, .personnel-name {
             font-weight: 600;
-            margin: 0 0 5px 0;
-            color: var(--dark);
+            margin: 0;
         }
         
-        .employee-position {
-            font-size: 14px;
-            color: #777;
-            margin: 0 0 8px 0;
+        .personnel-position {
+            font-size: 13px;
+            color: #666;
+            margin: 3px 0 0 0;
         }
         
-        .employee-payment input {
+        .bank-amount input, .personnel-payment input {
             width: 100%;
             padding: 8px 12px;
             border: 1px solid #ddd;
             border-radius: 4px;
-            font-size: 16px;
+            font-size: 15px;
+            text-align: right;
         }
         
-        .btn-container {
+        .buttons {
             display: flex;
-            gap: 15px;
-            margin-top: 30px;
             justify-content: center;
+            gap: 15px;
+            margin-top: 40px;
         }
         
         .btn {
@@ -227,164 +294,282 @@
         }
         
         .btn-secondary {
-            background-color: var(--light);
-            color: var(--dark);
-            border: 1px solid #ddd;
+            background-color: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
         }
         
         .btn-secondary:hover {
-            background-color: #e9ecef;
+            background-color: #f0f4ff;
             transform: translateY(-2px);
         }
         
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
+        @media print {
+            body {
+                background-color: white;
+                padding: 10px;
             }
             
-            .employees-grid {
-                grid-template-columns: 1fr;
+            .report-container {
+                box-shadow: none;
+                padding: 0;
             }
             
-            .btn-container {
-                flex-direction: column;
+            .buttons {
+                display: none;
+            }
+            
+            .result-card, .bank-card, .personnel-card {
+                box-shadow: none;
+                border: 1px solid #eee;
+                page-break-inside: avoid;
+            }
+            
+            .bank-grid, .personnel-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
 </head>
 <body>
-    <div class="dashboard">
+    <div class="report-container">
         <div class="header">
-            <h1><i class="fas fa-chart-pie"></i> Finans & Personel Raporu</h1>
-            <div>
-                <input type="week" id="report-week" style="padding: 10px; border-radius: 6px; border: 1px solid #ddd;">
+            <h1><i class="fas fa-file-invoice-dollar"></i> Detaylı Finans Raporu</h1>
+            <div class="date-selector">
+                <input type="week" id="report-week">
+                <button class="btn btn-primary" onclick="calculateReport()">
+                    <i class="fas fa-calculator"></i> Hesapla
+                </button>
             </div>
         </div>
         
-        <div class="input-section">
-            <h2 style="margin-top: 0; margin-bottom: 20px; color: var(--primary);">Finansal Veriler</h2>
-            
-            <div class="grid-container">
+        <div class="financial-sections">
+            <div class="financial-section">
+                <h3 class="section-title" style="color: var(--invoice-out);">
+                    <i class="fas fa-file-export"></i> Fatura Çıkış
+                </h3>
                 <div class="input-group">
-                    <label for="total-income">Toplam Gelir (KDV Dahil)</label>
-                    <input type="number" id="total-income" step="0.01" placeholder="TL cinsinden girin">
+                    <label for="invoice-out">Toplam Kesilen Fatura (KDV Dahil)</label>
+                    <input type="text" id="invoice-out" placeholder="0,00 TL" onblur="formatCurrency(this)">
                 </div>
                 
+                <h3 class="section-title" style="color: var(--income); margin-top: 25px;">
+                    <i class="fas fa-money-bill-wave"></i> Diğer Gelirler
+                </h3>
                 <div class="input-group">
-                    <label for="total-expense">Toplam Gider (KDV Dahil)</label>
-                    <input type="number" id="total-expense" step="0.01" placeholder="TL cinsinden girin">
+                    <label for="other-income">Toplam Diğer Gelirler</label>
+                    <input type="text" id="other-income" placeholder="0,00 TL" onblur="formatCurrency(this)">
                 </div>
-                
+            </div>
+            
+            <div class="financial-section">
+                <h3 class="section-title" style="color: var(--invoice-in);">
+                    <i class="fas fa-file-import"></i> Fatura Giriş
+                </h3>
                 <div class="input-group">
-                    <label for="other-costs">Diğer Masraflar</label>
-                    <input type="number" id="other-costs" step="0.01" placeholder="TL cinsinden girin">
+                    <label for="invoice-in">Toplam Gelen Fatura (KDV Dahil)</label>
+                    <input type="text" id="invoice-in" placeholder="0,00 TL" onblur="formatCurrency(this)">
+                </div>
+                
+                <h3 class="section-title" style="color: var(--expense); margin-top: 25px;">
+                    <i class="fas fa-file-invoice"></i> Diğer Giderler
+                </h3>
+                <div class="input-group">
+                    <label for="other-expense">Toplam Diğer Giderler</label>
+                    <input type="text" id="other-expense" placeholder="0,00 TL" onblur="formatCurrency(this)">
                 </div>
             </div>
         </div>
         
-        <div class="grid-container">
-            <div class="card income">
-                <div class="card-header">
-                    <h3 class="card-title">Toplam Gelir</h3>
-                    <div class="card-icon">
-                        <i class="fas fa-money-bill-wave"></i>
-                    </div>
+        <div class="results">
+            <div class="result-card invoice-out-card">
+                <div class="result-header">
+                    <h3 class="result-title">Toplam Fatura Çıkış</h3>
+                    <i class="fas fa-file-export" style="color: var(--invoice-out); font-size: 20px;"></i>
                 </div>
-                <div class="card-value" id="income-result">0.00 TL</div>
-                <p>KDV Dahil Faturalar</p>
+                <div class="result-value invoice-out-value" id="invoice-out-result">0,00 TL</div>
+                <p>Kesilen Faturalar (KDV Dahil)</p>
             </div>
             
-            <div class="card expense">
-                <div class="card-header">
-                    <h3 class="card-title">Toplam Gider</h3>
-                    <div class="card-icon">
-                        <i class="fas fa-file-invoice-dollar"></i>
-                    </div>
+            <div class="result-card invoice-in-card">
+                <div class="result-header">
+                    <h3 class="result-title">Toplam Fatura Giriş</h3>
+                    <i class="fas fa-file-import" style="color: var(--invoice-in); font-size: 20px;"></i>
                 </div>
-                <div class="card-value" id="expense-result">0.00 TL</div>
-                <p>KDV Dahil Faturalar</p>
+                <div class="result-value invoice-in-value" id="invoice-in-result">0,00 TL</div>
+                <p>Gelen Faturalar (KDV Dahil)</p>
             </div>
             
-            <div class="card cost">
-                <div class="card-header">
-                    <h3 class="card-title">Toplam Masraflar</h3>
-                    <div class="card-icon">
-                        <i class="fas fa-receipt"></i>
-                    </div>
+            <div class="result-card income-card">
+                <div class="result-header">
+                    <h3 class="result-title">Toplam Gelirler</h3>
+                    <i class="fas fa-money-bill-wave" style="color: var(--income); font-size: 20px;"></i>
                 </div>
-                <div class="card-value" id="cost-result">0.00 TL</div>
-                <p>Personel + Diğer Masraflar</p>
+                <div class="result-value income-value" id="income-result">0,00 TL</div>
+                <p>Diğer Gelirler</p>
             </div>
             
-            <div class="card profit">
-                <div class="card-header">
-                    <h3 class="card-title">Net Kar</h3>
-                    <div class="card-icon">
-                        <i class="fas fa-chart-line"></i>
+            <div class="result-card expense-card">
+                <div class="result-header">
+                    <h3 class="result-title">Toplam Giderler</h3>
+                    <i class="fas fa-file-invoice" style="color: var(--expense); font-size: 20px;"></i>
+                </div>
+                <div class="result-value expense-value" id="expense-result">0,00 TL</div>
+                <p>Diğer Giderler + Personel</p>
+            </div>
+            
+            <div class="bank-section">
+                <h3 class="section-title" style="color: var(--bank);">
+                    <i class="fas fa-university"></i> Banka Hesapları
+                </h3>
+                
+                <div class="bank-grid">
+                    <div class="bank-card">
+                        <div class="bank-info">
+                            <div class="bank-icon">
+                                <i class="fas fa-landmark"></i>
+                            </div>
+                            <div>
+                                <h4 class="bank-name">İş Bankası</h4>
+                            </div>
+                        </div>
+                        <div class="bank-amount">
+                            <input type="text" id="isbankasi-amount" placeholder="0,00 TL" onblur="formatCurrency(this)">
+                        </div>
+                    </div>
+                    
+                    <div class="bank-card">
+                        <div class="bank-info">
+                            <div class="bank-icon">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <div>
+                                <h4 class="bank-name">Yapı Kredi</h4>
+                            </div>
+                        </div>
+                        <div class="bank-amount">
+                            <input type="text" id="yapikredi-amount" placeholder="0,00 TL" onblur="formatCurrency(this)">
+                        </div>
+                    </div>
+                    
+                    <div class="bank-card">
+                        <div class="bank-info">
+                            <div class="bank-icon">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div>
+                                <h4 class="bank-name">Nakit Para</h4>
+                            </div>
+                        </div>
+                        <div class="bank-amount">
+                            <input type="text" id="cash-amount" placeholder="0,00 TL" onblur="formatCurrency(this)">
+                        </div>
                     </div>
                 </div>
-                <div class="card-value" id="profit-result">0.00 TL</div>
-                <p>Gelir - (Gider + Masraflar)</p>
             </div>
+            
+            <div class="personnel-section">
+                <h3 class="section-title" style="color: var(--personnel);">
+                    <i class="fas fa-users"></i> Personel Ödemeleri
+                </h3>
+                
+                <div class="personnel-grid">
+                    <div class="personnel-card">
+                        <div class="personnel-info">
+                            <img src="https://ui-avatars.com/api/?name=Ahmet+Ada&background=4361ee&color=fff" class="personnel-avatar">
+                            <div>
+                                <h4 class="personnel-name">Ahmet Ada</h4>
+                                <p class="personnel-position">Teknik Eleman</p>
+                            </div>
+                        </div>
+                        <div class="personnel-payment">
+                            <input type="text" id="ahmet-payment" placeholder="0,00 TL" onblur="formatCurrency(this)">
+                        </div>
+                    </div>
+                    
+                    <div class="personnel-card">
+                        <div class="personnel-info">
+                            <img src="https://ui-avatars.com/api/?name=Tolga+Köleli&background=3a0ca3&color=fff" class="personnel-avatar">
+                            <div>
+                                <h4 class="personnel-name">Tolga Köleli</h4>
+                                <p class="personnel-position">Teknik Eleman</p>
+                            </div>
+                        </div>
+                        <div class="personnel-payment">
+                            <input type="text" id="tolga-payment" placeholder="0,00 TL" onblur="formatCurrency(this)">
+                        </div>
+                    </div>
+                    
+                    <div class="personnel-card">
+                        <div class="personnel-info">
+                            <img src="https://ui-avatars.com/api/?name=Emre+Çelik&background=7209b7&color=fff" class="personnel-avatar">
+                            <div>
+                                <h4 class="personnel-name">Emre Çelik</h4>
+                                <p class="personnel-position">Operasyon Müdürü</p>
+                            </div>
+                        </div>
+                        <div class="personnel-payment">
+                            <input type="text" id="emre-payment" placeholder="0,00 TL" onblur="formatCurrency(this)">
+                        </div>
+                    </div>
+                    
+                    <div class="personnel-card">
+                        <div class="personnel-info">
+                            <img src="https://ui-avatars.com/api/?name=Kasım+Çelik&background=f72585&color=fff" class="personnel-avatar">
+                            <div>
+                                <h4 class="personnel-name">Kasım Çelik</h4>
+                                <p class="personnel-position">Muhasebe</p>
+                            </div>
+                        </div>
+                        <div class="personnel-payment">
+                            <input type="text" id="kasim-payment" placeholder="0,00 TL" onblur="formatCurrency(this)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <table class="summary-table">
+                <tr>
+                    <th>Fatura Çıkış (KDV Dahil)</th>
+                    <td id="summary-invoice-out">0,00 TL</td>
+                </tr>
+                <tr>
+                    <th>Fatura Giriş (KDV Dahil)</th>
+                    <td id="summary-invoice-in">0,00 TL</td>
+                </tr>
+                <tr>
+                    <th>Diğer Gelirler</th>
+                    <td id="summary-income">0,00 TL</td>
+                </tr>
+                <tr>
+                    <th>Diğer Giderler</th>
+                    <td id="summary-expense">0,00 TL</td>
+                </tr>
+                <tr>
+                    <th>Personel Giderleri</th>
+                    <td id="summary-personnel">0,00 TL</td>
+                </tr>
+                <tr>
+                    <th>İş Bankası</th>
+                    <td id="summary-isbankasi">0,00 TL</td>
+                </tr>
+                <tr>
+                    <th>Yapı Kredi</th>
+                    <td id="summary-yapikredi">0,00 TL</td>
+                </tr>
+                <tr>
+                    <th>Nakit Para</th>
+                    <td id="summary-cash">0,00 TL</td>
+                </tr>
+                <tr>
+                    <th>Toplam Nakit</th>
+                    <td id="total-cash" style="font-weight: bold;">0,00 TL</td>
+                </tr>
+            </table>
         </div>
         
-        <div class="employees-section">
-            <h2 class="section-title"><i class="fas fa-users"></i> Personel Ödemeleri</h2>
-            
-            <div class="employees-grid">
-                <div class="employee-card">
-                    <img src="https://ui-avatars.com/api/?name=Ahmet+Ada&background=4361ee&color=fff" class="employee-avatar">
-                    <div class="employee-info">
-                        <h4 class="employee-name">Ahmet Ada</h4>
-                        <p class="employee-position">Teknik Eleman</p>
-                        <div class="employee-payment">
-                            <input type="number" id="ahmet-payment" step="0.01" placeholder="Ödeme Tutarı">
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="employee-card">
-                    <img src="https://ui-avatars.com/api/?name=Tolga+Köleli&background=3f37c9&color=fff" class="employee-avatar">
-                    <div class="employee-info">
-                        <h4 class="employee-name">Tolga Köleli</h4>
-                        <p class="employee-position">Teknik Eleman</p>
-                        <div class="employee-payment">
-                            <input type="number" id="tolga-payment" step="0.01" placeholder="Ödeme Tutarı">
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="employee-card">
-                    <img src="https://ui-avatars.com/api/?name=Emre+Çelik&background=f72585&color=fff" class="employee-avatar">
-                    <div class="employee-info">
-                        <h4 class="employee-name">Emre Çelik</h4>
-                        <p class="employee-position">Operasyon Müdürü</p>
-                        <div class="employee-payment">
-                            <input type="number" id="emre-payment" step="0.01" placeholder="Ödeme Tutarı">
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="employee-card">
-                    <img src="https://ui-avatars.com/api/?name=Kasım+Çelik&background=4cc9f0&color=fff" class="employee-avatar">
-                    <div class="employee-info">
-                        <h4 class="employee-name">Kasım Çelik</h4>
-                        <p class="employee-position">Saha Sorumlusu</p>
-                        <div class="employee-payment">
-                            <input type="number" id="kasim-payment" step="0.01" placeholder="Ödeme Tutarı">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="btn-container">
-            <button class="btn btn-primary" onclick="calculateReport()">
-                <i class="fas fa-calculator"></i> Hesapla
-            </button>
-            <button class="btn btn-secondary" onclick="window.print()">
+        <div class="buttons">
+            <button class="btn btn-primary" onclick="window.print()">
                 <i class="fas fa-print"></i> Yazdır
             </button>
             <button class="btn btn-secondary" onclick="saveData()">
@@ -397,92 +582,148 @@
     </div>
 
     <script>
+        // Para formatı düzenleme
+        function formatCurrency(input) {
+            // Sadece sayıları ve virgülü al
+            let value = input.value.replace(/[^\d,]/g, '');
+            
+            // Virgül kontrolü
+            if (value.split(',').length > 2) {
+                value = value.replace(/,$/, '');
+            }
+            
+            // Sayıyı parse et
+            let number = parseFloat(value.replace(',', '.')) || 0;
+            
+            // Formatla ve geri yaz
+            input.value = formatNumber(number);
+            return number;
+        }
+        
+        // Sayıyı TL formatına çevir
+        function formatNumber(num) {
+            return new Intl.NumberFormat('tr-TR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(num);
+        }
+        
+        // String'den sayıya çevir
+        function parseFormattedNumber(str) {
+            return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
+        }
+        
         // Raporu hesapla ve güncelle
         function calculateReport() {
-            // Finansal verileri al
-            const income = parseFloat(document.getElementById('total-income').value) || 0;
-            const expense = parseFloat(document.getElementById('total-expense').value) || 0;
-            const otherCosts = parseFloat(document.getElementById('other-costs').value) || 0;
+            // Hafta bilgisini al
+            const weekInput = document.getElementById('report-week').value;
+            if (!weekInput) {
+                alert('Lütfen bir hafta seçin');
+                return;
+            }
+            
+            // Fatura ve diğer verileri al
+            const invoiceOut = parseFormattedNumber(document.getElementById('invoice-out').value);
+            const invoiceIn = parseFormattedNumber(document.getElementById('invoice-in').value);
+            const otherIncome = parseFormattedNumber(document.getElementById('other-income').value);
+            const otherExpense = parseFormattedNumber(document.getElementById('other-expense').value);
             
             // Personel ödemelerini al
-            const ahmetPayment = parseFloat(document.getElementById('ahmet-payment').value) || 0;
-            const tolgaPayment = parseFloat(document.getElementById('tolga-payment').value) || 0;
-            const emrePayment = parseFloat(document.getElementById('emre-payment').value) || 0;
-            const kasimPayment = parseFloat(document.getElementById('kasim-payment').value) || 0;
+            const ahmetPayment = parseFormattedNumber(document.getElementById('ahmet-payment').value);
+            const tolgaPayment = parseFormattedNumber(document.getElementById('tolga-payment').value);
+            const emrePayment = parseFormattedNumber(document.getElementById('emre-payment').value);
+            const kasimPayment = parseFormattedNumber(document.getElementById('kasim-payment').value);
+            const totalPersonnel = ahmetPayment + tolgaPayment + emrePayment + kasimPayment;
             
-            // Toplam masrafları hesapla
-            const totalPersonnelCost = ahmetPayment + tolgaPayment + emrePayment + kasimPayment;
-            const totalCosts = totalPersonnelCost + otherCosts;
-            
-            // Net karı hesapla
-            const netProfit = income - expense - totalCosts;
+            // Banka hesaplarını al
+            const isbankasi = parseFormattedNumber(document.getElementById('isbankasi-amount').value);
+            const yapikredi = parseFormattedNumber(document.getElementById('yapikredi-amount').value);
+            const cash = parseFormattedNumber(document.getElementById('cash-amount').value);
+            const totalCash = isbankasi + yapikredi + cash;
             
             // Sonuçları göster
-            document.getElementById('income-result').textContent = income.toFixed(2) + ' TL';
-            document.getElementById('expense-result').textContent = expense.toFixed(2) + ' TL';
-            document.getElementById('cost-result').textContent = totalCosts.toFixed(2) + ' TL';
+            document.getElementById('invoice-out-result').textContent = formatNumber(invoiceOut) + ' TL';
+            document.getElementById('invoice-in-result').textContent = formatNumber(invoiceIn) + ' TL';
+            document.getElementById('income-result').textContent = formatNumber(otherIncome) + ' TL';
+            document.getElementById('expense-result').textContent = formatNumber(otherExpense + totalPersonnel) + ' TL';
             
-            const profitElement = document.getElementById('profit-result');
-            profitElement.textContent = netProfit.toFixed(2) + ' TL';
-            profitElement.className = netProfit >= 0 ? 'card-value positive' : 'card-value negative';
-            
-            alert('Rapor güncellendi!');
+            // Tablo özetini güncelle
+            document.getElementById('summary-invoice-out').textContent = formatNumber(invoiceOut) + ' TL';
+            document.getElementById('summary-invoice-in').textContent = formatNumber(invoiceIn) + ' TL';
+            document.getElementById('summary-income').textContent = formatNumber(otherIncome) + ' TL';
+            document.getElementById('summary-expense').textContent = formatNumber(otherExpense) + ' TL';
+            document.getElementById('summary-personnel').textContent = formatNumber(totalPersonnel) + ' TL';
+            document.getElementById('summary-isbankasi').textContent = formatNumber(isbankasi) + ' TL';
+            document.getElementById('summary-yapikredi').textContent = formatNumber(yapikredi) + ' TL';
+            document.getElementById('summary-cash').textContent = formatNumber(cash) + ' TL';
+            document.getElementById('total-cash').textContent = formatNumber(totalCash) + ' TL';
         }
         
         // Verileri kaydet
         function saveData() {
             const reportData = {
                 week: document.getElementById('report-week').value,
-                income: document.getElementById('total-income').value,
-                expense: document.getElementById('total-expense').value,
-                otherCosts: document.getElementById('other-costs').value,
+                invoiceOut: document.getElementById('invoice-out').value,
+                invoiceIn: document.getElementById('invoice-in').value,
+                otherIncome: document.getElementById('other-income').value,
+                otherExpense: document.getElementById('other-expense').value,
                 ahmetPayment: document.getElementById('ahmet-payment').value,
                 tolgaPayment: document.getElementById('tolga-payment').value,
                 emrePayment: document.getElementById('emre-payment').value,
                 kasimPayment: document.getElementById('kasim-payment').value,
+                isbankasi: document.getElementById('isbankasi-amount').value,
+                yapikredi: document.getElementById('yapikredi-amount').value,
+                cash: document.getElementById('cash-amount').value,
                 timestamp: new Date().toISOString()
             };
             
-            localStorage.setItem('financeReportData', JSON.stringify(reportData));
+            localStorage.setItem('detailedFinanceReport', JSON.stringify(reportData));
             alert('Veriler kaydedildi!');
         }
         
         // Verileri temizle
         function clearData() {
             if(confirm('Tüm verileri temizlemek istediğinize emin misiniz?')) {
-                document.getElementById('report-week').value = '';
-                document.getElementById('total-income').value = '';
-                document.getElementById('total-expense').value = '';
-                document.getElementById('other-costs').value = '';
-                document.getElementById('ahmet-payment').value = '';
-                document.getElementById('tolga-payment').value = '';
-                document.getElementById('emre-payment').value = '';
-                document.getElementById('kasim-payment').value = '';
+                // Inputları temizle
+                document.querySelectorAll('input[type="text"]').forEach(input => {
+                    input.value = '';
+                });
                 
-                document.getElementById('income-result').textContent = '0.00 TL';
-                document.getElementById('expense-result').textContent = '0.00 TL';
-                document.getElementById('cost-result').textContent = '0.00 TL';
-                document.getElementById('profit-result').textContent = '0.00 TL';
-                document.getElementById('profit-result').className = 'card-value';
+                // Sonuçları sıfırla
+                document.querySelectorAll('.result-value').forEach(el => {
+                    el.textContent = '0,00 TL';
+                });
                 
-                localStorage.removeItem('financeReportData');
+                document.querySelectorAll('#summary-table td').forEach(td => {
+                    if(td.id.startsWith('summary-') || td.id === 'total-cash') {
+                        td.textContent = '0,00 TL';
+                    }
+                });
+                
+                localStorage.removeItem('detailedFinanceReport');
             }
         }
         
         // Sayfa yüklendiğinde kayıtlı verileri kontrol et
         window.addEventListener('DOMContentLoaded', () => {
-            const savedData = localStorage.getItem('financeReportData');
+            const savedData = localStorage.getItem('detailedFinanceReport');
             if (savedData) {
                 if (confirm('Kayıtlı veriler bulundu. Yüklemek ister misiniz?')) {
                     const data = JSON.parse(savedData);
+                    
+                    // Inputları doldur
                     document.getElementById('report-week').value = data.week || '';
-                    document.getElementById('total-income').value = data.income || '';
-                    document.getElementById('total-expense').value = data.expense || '';
-                    document.getElementById('other-costs').value = data.otherCosts || '';
-                    document.getElementById('ahmet-payment').value = data.ahmetPayment || '';
-                    document.getElementById('tolga-payment').value = data.tolgaPayment || '';
-                    document.getElementById('emre-payment').value = data.emrePayment || '';
-                    document.getElementById('kasim-payment').value = data.kasimPayment || '';
+                    document.getElementById('invoice-out').value = data.invoiceOut || '0,00';
+                    document.getElementById('invoice-in').value = data.invoiceIn || '0,00';
+                    document.getElementById('other-income').value = data.otherIncome || '0,00';
+                    document.getElementById('other-expense').value = data.otherExpense || '0,00';
+                    document.getElementById('ahmet-payment').value = data.ahmetPayment || '0,00';
+                    document.getElementById('tolga-payment').value = data.tolgaPayment || '0,00';
+                    document.getElementById('emre-payment').value = data.emrePayment || '0,00';
+                    document.getElementById('kasim-payment').value = data.kasimPayment || '0,00';
+                    document.getElementById('isbankasi-amount').value = data.isbankasi || '0,00';
+                    document.getElementById('yapikredi-amount').value = data.yapikredi || '0,00';
+                    document.getElementById('cash-amount').value = data.cash || '0,00';
                     
                     // Hesaplamayı tetikle
                     calculateReport();
